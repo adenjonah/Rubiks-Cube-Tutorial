@@ -11,7 +11,7 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="min-h-screen bg-gray-100">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-10">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/learn/:moduleId" element={<LearningModule />} />
