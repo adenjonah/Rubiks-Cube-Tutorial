@@ -19,7 +19,7 @@ rubiks-cube-app/
 │       ├── components/      # Reusable components
 │       ├── pages/           # Page components
 │       ├── App.js           # Main App component
-│       └── index.js         # Entry point
+│       └── index.js         # Entry pointto app
 └── README.md                # Project documentation
 ```
 
