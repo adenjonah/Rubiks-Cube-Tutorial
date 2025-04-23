@@ -1,0 +1,30 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="300" height="300" fill="#f8f9fa" />
+  
+  <!-- Cube outline -->
+  <rect x="50" y="50" width="200" height="200" fill="none" stroke="#333" stroke-width="3" />
+  
+  <!-- Grid lines -->
+  <line x1="50" y1="116.6" x2="250" y2="116.6" stroke="#333" stroke-width="2" />
+  <line x1="50" y1="183.3" x2="250" y2="183.3" stroke="#333" stroke-width="2" />
+  <line x1="116.6" y1="50" x2="116.6" y2="250" stroke="#333" stroke-width="2" />
+  <line x1="183.3" y1="50" x2="183.3" y2="250" stroke="#333" stroke-width="2" />
+  
+  <!-- Center squares -->
+  <rect x="117.6" y="117.6" width="64.8" height="64.8" fill="#ffffff" stroke="#333" />
+  <rect x="117.6" y="50.5" width="64.8" height="64.8" fill="#ff0000" stroke="#333" />
+  <rect x="183.4" y="117.6" width="64.8" height="64.8" fill="#0000ff" stroke="#333" />
+  <rect x="117.6" y="183.4" width="64.8" height="64.8" fill="#ffff00" stroke="#333" />
+  <rect x="50.5" y="117.6" width="64.8" height="64.8" fill="#00ff00" stroke="#333" />
+  
+  <!-- Labels -->
+  <text x="150" y="83" text-anchor="middle" fill="#fff" font-family="Arial" font-size="16" font-weight="bold">TOP</text>
+  <text x="150" y="217" text-anchor="middle" fill="#000" font-family="Arial" font-size="16" font-weight="bold">BOTTOM</text>
+  <text x="83" y="150" text-anchor="middle" fill="#fff" font-family="Arial" font-size="16" font-weight="bold">LEFT</text>
+  <text x="217" y="150" text-anchor="middle" fill="#fff" font-family="Arial" font-size="16" font-weight="bold">RIGHT</text>
+  <text x="150" y="150" text-anchor="middle" fill="#000" font-family="Arial" font-size="16" font-weight="bold">FRONT</text>
+  
+  <!-- Title -->
+  <text x="150" y="30" text-anchor="middle" fill="#333" font-family="Arial" font-size="18" font-weight="bold">Rubik's Cube Structure</text>
+</svg> 

@@ -1,0 +1,189 @@
+{
+  "learning_modules": [
+    {
+      "id": 1,
+      "title": "Understanding Cube Structure",
+      "content": "A standard Rubik's Cube has 6 faces, each with a different color. The white face is traditionally considered the starting point for solving. Each face can rotate in a clockwise or counterclockwise direction. Understanding the structure is crucial before you start solving.\n\nThe cube has the following notation for moves:\n- U: Top (Up) face clockwise\n- U' (read as \"U prime\"): Top face counterclockwise\n- D: Bottom (Down) face clockwise\n- D' (read as \"D prime\"): Bottom face counterclockwise\n- L: Left face clockwise\n- L' (read as \"L prime\"): Left face counterclockwise\n- R: Right face clockwise\n- R' (read as \"R prime\"): Right face counterclockwise\n- F: Front face clockwise\n- F' (read as \"F prime\"): Front face counterclockwise\n- B: Back face clockwise\n- B' (read as \"B prime\"): Back face counterclockwise\n\nNote: The prime symbol (') indicates a counterclockwise rotation of the face. For example, F' is read as \"F prime\" and means to rotate the front face counterclockwise.",
+      "media": [
+        {"type": "image", "url": "cube_structure.png", "description": "Cube faces labeled"},
+        {"type": "gif", "url": "cube_rotation.gif", "description": "Basic rotation demonstration"}
+      ],
+      "practice_questions": [
+        {
+          "question": "What color is opposite to white on a standard cube?",
+          "type": "multiple_choice",
+          "options": ["Red", "Yellow", "Blue", "Green"],
+          "correct_answer": "Yellow"
+        },
+        {
+          "question": "Which edge color pair does not exist on a standard cube?",
+          "type": "multiple_choice",
+          "options": ["White/Yellow", "White/Blue", "Red/Blue", "Green/Orange"],
+          "correct_answer": "White/Yellow"
+        },
+        {
+          "question": "What notation represents a clockwise rotation of the front face?",
+          "type": "multiple_choice",
+          "options": ["F", "F'", "R", "U"],
+          "correct_answer": "F"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Identifying White Edges",
+      "content": "The white edges are the pieces that have white on one side and another color on the adjacent side. There are 4 white edges in total that need to be identified and placed correctly to form the white cross.\n\nTo solve the white face, you first need to locate all four white edge pieces. These pieces have white on one side and another color on the adjacent side. The goal is to identify these pieces wherever they are in the cube.",
+      "media": [
+        {"type": "image", "url": "white_edges.png", "description": "White edges identified"}
+      ],
+      "practice_questions": [
+        {
+          "question": "How many white edge pieces are there on a standard Rubik's Cube?",
+          "type": "multiple_choice",
+          "options": ["12", "6", "4", "8"],
+          "correct_answer": "4"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Orienting White Edges",
+      "content": "Now that you've identified the white edges, let's solve the white cross. The white cross is formed when all four white edge pieces are correctly positioned with white on top and the adjacent colors matching the center pieces of the respective faces.\n\nHere's the general approach:\n1. Find a white edge piece\n2. Position it so the non-white color aligns with the matching center piece\n3. Use the appropriate algorithm to move it into the correct position on the white face\n4. Repeat for all four white edges\n\nHere's a specific algorithm to place a white edge without disturbing other already placed white edges:\n\nIf the edge piece is on the bottom layer with white facing down:\n1. Rotate the bottom face (D) to position the edge directly below its destination position\n2. Perform F2 (turning the front face twice) to move it to the correct position\n\nIf the edge piece is on the bottom layer with white facing the side:\n1. Rotate the bottom face (D) to position the edge below any face that isn't its destination\n2. Perform a sequence like (R' D' R) to bring the edge to the bottom with white facing down\n3. Now use the method above to place it correctly\n\nIf the edge piece is already on the top layer but incorrectly oriented:\n1. Use F R' D' R F' to bring it down to the bottom layer\n2. Then use one of the methods above to place it correctly\n\nThis systematic approach ensures you can build the white cross without undoing your previous work.",
+      "media": [
+        {"type": "image", "url": "white_cross.png", "description": "Completed white cross"},
+        {"type": "gif", "url": "white_cross_solution.gif", "description": "White cross solution animation"}
+      ],
+      "practice_questions": [
+        {
+          "question": "When the white cross is complete, what should match with each edge's non-white color?",
+          "type": "multiple_choice",
+          "options": ["Corner pieces", "Center pieces", "Other edge pieces", "Nothing specific"],
+          "correct_answer": "Center pieces"
+        },
+        {
+          "question": "What move sequence can you use if a white edge is on the bottom layer with white facing down?",
+          "type": "multiple_choice",
+          "options": ["R U R'", "F2", "R' D' R", "L D L'"],
+          "correct_answer": "F2"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Identifying White Corners",
+      "content": "White corners are the pieces that have white on one side and two other colors on the adjacent sides. There are 4 white corners in total that need to be identified and placed correctly to complete the white face.\n\nAfter forming the white cross, the next step is to place all four white corner pieces. Each corner has three colors - white and two others. The goal is to place each corner so that all colors align with their respective center pieces.",
+      "media": [
+        {"type": "image", "url": "white_corners.png", "description": "White corners identified"}
+      ],
+      "practice_questions": [
+        {
+          "question": "How many colors does each corner piece have?",
+          "type": "multiple_choice",
+          "options": ["1", "2", "3", "4"],
+          "correct_answer": "3"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Solving White Corners",
+      "content": "Now it's time to place the white corners correctly to complete the white face. The key is understanding why we position and repeat the algorithm.\n\nA common algorithm for placing a white corner is:\nR' D' R D\n\nWhen a white corner needs to be placed, we first position it directly beneath its target slot. This is crucial because:\n1. The algorithm will cycle the corner piece between this position and the slot above\n2. Each repetition rotates the corner piece differently\n3. We can keep repeating until the white face is oriented upward\n\nThink of it like a door that can only swing in one direction - by positioning the corner below its slot and repeating the sequence, we're essentially \"knocking\" on that door until it opens the right way.\n\nHere's the approach:\n1. Find where the corner needs to go based on its other colors\n2. Position that corner piece in the bottom layer directly below its target slot\n3. Apply the algorithm (R' D' R D) and watch how the corner rotates\n4. Keep repeating until the white sticker faces up and slots perfectly\n5. Move on to the next corner",
+      "media": [
+        {"type": "gif", "url": "corner_algorithm.gif", "description": "Corner placement algorithm demonstration"}
+      ],
+      "practice_questions": [
+        {
+          "question": "What algorithm can be used to place white corners?",
+          "type": "multiple_choice",
+          "options": ["F R F' R'", "R' D' R D", "U R U' R'", "L D L' D'"],
+          "correct_answer": "R' D' R D"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Confirming the Solution",
+      "content": "You've now completed the white face of the Rubik's Cube! Let's check your solution to make sure everything is correct.\n\nVerification steps:\n1. The white face should be completely white\n2. The edge pieces should have their non-white color matching the adjacent center pieces\n3. The corner pieces should have their non-white colors matching both adjacent center pieces\n\nIf all these conditions are met, congratulations! You've successfully solved the white face and are ready to move on to the next steps in solving the entire cube.",
+      "media": [
+        {"type": "image", "url": "completed_white_face.png", "description": "Completed white face with all edges and corners correctly positioned"}
+      ],
+      "practice_questions": [
+        {
+          "question": "Once the white face is complete, what percentage of the entire cube is solved?",
+          "type": "multiple_choice",
+          "options": ["~17%", "~33%", "~50%", "~66%"],
+          "correct_answer": "~17%"
+        }
+      ]
+    }
+  ],
+  "quiz_questions": [
+    {
+      "id": 1,
+      "question": "What move would you make to rotate the top face clockwise?",
+      "type": "multiple_choice",
+      "options": ["U", "U'", "F", "R"],
+      "correct_answer": "U",
+      "explanation": "U represents the Up face rotating clockwise."
+    },
+    {
+      "id": 2,
+      "question": "The notation for rotating the right face counterclockwise is ___.",
+      "type": "fill_in_blank",
+      "correct_answer": "R'",
+      "explanation": "R' indicates the Right face rotating counterclockwise."
+    },
+    {
+      "id": 3,
+      "question": "How many edge pieces need to be placed to form the white cross?",
+      "type": "multiple_choice",
+      "options": ["3", "4", "6", "8"],
+      "correct_answer": "4",
+      "explanation": "The white cross consists of 4 edge pieces that connect the white center to the 4 adjacent face centers."
+    },
+    {
+      "id": 4,
+      "question": "When placing a white corner piece, the white sticker should be facing ___.",
+      "type": "fill_in_blank",
+      "correct_answer": "up",
+      "explanation": "When correctly placed, the white part of each corner should be facing up (on the white face)."
+    },
+    {
+      "id": 5,
+      "question": "What algorithm is commonly used to place white corners?",
+      "type": "multiple_choice",
+      "options": ["F R F' R'", "R' D' R D", "U R U' R'", "L' B L B'"],
+      "correct_answer": "R' D' R D",
+      "explanation": "The algorithm R' D' R D is a common sequence for placing white corners. It may need to be repeated multiple times for correct orientation."
+    },
+    {
+      "id": 6,
+      "question": "What is the correct position for a white-red-blue corner piece?",
+      "type": "multiple_choice",
+      "options": [
+        "White on top, red on front, blue on right", 
+        "White on top, blue on front, red on right",
+        "White on top, red on right, blue on front", 
+        "Any orientation as long as white is on top"
+      ],
+      "correct_answer": "White on top, red on front, blue on right",
+      "explanation": "Each corner must be placed so all three colors match their respective center pieces."
+    },
+    {
+      "id": 8,
+      "question": "What is the standard color opposite to white on a Rubik's Cube?",
+      "type": "multiple_choice",
+      "options": ["Red", "Yellow", "Blue", "Green"],
+      "correct_answer": "Yellow",
+      "explanation": "On a standard Rubik's Cube, yellow is opposite to white."
+    },
+    {
+      "id": 9,
+      "question": "What algorithm can you use to place a white edge from the bottom layer to the top without disturbing other edges?",
+      "type": "multiple_choice",
+      "options": ["R U R' U'", "F2", "D L D' L'", "U R U'"],
+      "correct_answer": "F2",
+      "explanation": "F2 (turning the front face twice) can move a white edge from the bottom layer to the top when positioned directly below its destination, without disturbing other correctly placed white edges."
+    }
+  ]
+} 

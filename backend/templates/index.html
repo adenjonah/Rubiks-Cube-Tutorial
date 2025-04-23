@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik's Cube White Side Solver - API</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #4b5563;
+            margin-top: 30px;
+        }
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .endpoint {
+            background-color: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .method {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        .get {
+            background-color: #10b981;
+        }
+        .post {
+            background-color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rubik's Cube White Side Solver - API</h1>
+    
+    <p>This is the API server for the Rubik's Cube White Side Solver educational application. The React frontend should be running separately.</p>
+    
+    <h2>Available Endpoints:</h2>
+    
+    <div class="endpoint">
+        <span class="method post">POST</span>
+        <code>/api/start</code>
+        <p>Start a new learning session</p>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method get">GET</span>
+        <code>/api/module/{module_id}</code>
+        <p>Get learning module content by ID</p>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method post">POST</span>
+        <code>/api/module/{module_id}/complete</code>
+        <p>Mark a module as complete and save user answers</p>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method get">GET</span>
+        <code>/api/quiz/{question_id}</code>
+        <p>Get quiz question by ID</p>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method post">POST</span>
+        <code>/api/quiz/{question_id}/answer</code>
+        <p>Submit an answer for a quiz question</p>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method get">GET</span>
+        <code>/api/results</code>
+        <p>Get quiz results and score</p>
+    </div>
+    
+    <div class="endpoint">
+        <span class="method post">POST</span>
+        <code>/api/reset-quiz</code>
+        <p>Reset quiz answers to retake the quiz</p>
+    </div>
+    
+    <h2>Setup Instructions</h2>
+    <p>For complete setup instructions, please refer to the README.md file in the project root directory.</p>
+</body>
+</html> 

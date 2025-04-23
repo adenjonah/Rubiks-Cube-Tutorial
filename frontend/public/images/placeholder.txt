@@ -1,0 +1,12 @@
+This directory will contain the following images for the Rubik's Cube learning application:
+
+1. cube_structure.png - Diagram of the Rubik's Cube structure with labeled faces
+2. cube_rotation.gif - Animation showing basic cube rotations
+3. white_edges.png - Image highlighting the white edge pieces
+4. white_cross.png - Image of a completed white cross
+5. white_cross_solution.gif - Animation showing how to solve the white cross
+6. white_corners.png - Image highlighting the white corner pieces
+7. corner_algorithm.gif - Animation demonstrating the corner placement algorithm
+8. completed_white_face.png - Image of a completed white face
+
+You should place actual image files here before running the application in production. 
