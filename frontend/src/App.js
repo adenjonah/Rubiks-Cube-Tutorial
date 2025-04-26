@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import LearningModule from './pages/LearningModule';
 import Quiz from './pages/Quiz';
 import Results from './pages/Results';
+import Cube from './pages/Cube';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Route path="/learn/:moduleId" element={<LearningModule />} />
             <Route path="/quiz/:questionId" element={<Quiz />} />
             <Route path="/results" element={<Results />} />
+            <Route path="/cube" element={<Cube />} />
           </Routes>
         </div>
       </div>
