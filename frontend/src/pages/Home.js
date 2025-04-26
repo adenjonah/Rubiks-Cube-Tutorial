@@ -19,9 +19,16 @@ const Home = () => {
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-800 mb-4">Learn to Solve the White Side of a Rubik's Cube</h1>
-        <p className="text-xl text-gray-600">
+        <p className="text-xl text-gray-600 mb-8">
           Welcome to our interactive tutorial! We'll guide you through the process of solving the white side of a Rubik's cube step by step.
         </p>
+        <div className="flex justify-center mb-8">
+          <img 
+            src="/images/Scrambled.jpg" 
+            alt="Scrambled Rubik's Cube" 
+            className="rounded-lg shadow-lg max-w-md w-full"
+          />
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-8 mb-8">
