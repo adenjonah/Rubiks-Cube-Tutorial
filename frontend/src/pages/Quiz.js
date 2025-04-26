@@ -50,7 +50,7 @@ const Quiz = () => {
       });
       
       setFeedback({
-        isCorrect: response.data.isCorrect,
+        isCorrect: response.data.is_correct,
         explanation: response.data.explanation
       });
       
