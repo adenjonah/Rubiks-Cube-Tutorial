@@ -2,39 +2,64 @@
 
 # Function to handle cleanup on script exit
 function Cleanup {
-    Write-Host "Shutting down server..."
+    Write-Host "`nShutting down servers..." -ForegroundColor Yellow
     if ($backendProcess -and !$backendProcess.HasExited) {
         $backendProcess.Kill()
+    }
+    if ($frontendProcess -and !$frontendProcess.HasExited) {
+        $frontendProcess.Kill()
     }
     exit
 }
 
-# Start Flask backend
-Write-Host "Starting Flask backend..."
-Set-Location -Path ".\backend"
+# Register cleanup function for Ctrl+C
+$null = Register-ObjectEvent -InputObject ([Console]) -EventName CancelKeyPress -Action { Cleanup }
 
-# Check if requirements are installed
-if (-Not (Test-Path "venv")) {
-    Write-Host "Creating virtual environment..."
-    python -m venv venv
-    Write-Host "Activating virtual environment..."
+try {
+    # Start backend
+    Write-Host "Starting Flask backend..." -ForegroundColor Green
+    Set-Location -Path ".\backend"
+    
+    # Check if virtual environment exists
+    if (-Not (Test-Path "venv")) {
+        Write-Host "Creating virtual environment..." -ForegroundColor Yellow
+        python -m venv venv
+    }
+    
+    # Activate virtual environment and install requirements
+    Write-Host "Activating virtual environment..." -ForegroundColor Yellow
     .\venv\Scripts\Activate
-    Write-Host "Installing requirements..."
     pip install -r requirements.txt
-} else {
-    Write-Host "Activating virtual environment..."
-    .\venv\Scripts\Activate
+    
+    # Start backend process
+    $backendProcess = Start-Process -FilePath "cmd.exe" -ArgumentList "/c python -m flask run" -NoNewWindow -PassThru
+    Set-Location -Path ".."
+
+    # Start frontend
+    Write-Host "`nStarting React frontend..." -ForegroundColor Green
+    Set-Location -Path ".\frontend"
+    
+    # Install dependencies if needed
+    if (-Not (Test-Path "node_modules")) {
+        Write-Host "Installing frontend dependencies..." -ForegroundColor Yellow
+        npm install
+    }
+    
+    # Start frontend process
+    $frontendProcess = Start-Process -FilePath "cmd.exe" -ArgumentList "/c npm start" -NoNewWindow -PassThru
+    Set-Location -Path ".."
+
+    Write-Host "`nServers are running!" -ForegroundColor Green
+    Write-Host "Backend: http://localhost:5000" -ForegroundColor Cyan
+    Write-Host "Frontend: http://localhost:3000" -ForegroundColor Cyan
+    Write-Host "`nPress Ctrl+C to stop both servers" -ForegroundColor Yellow
+
+    # Keep script alive until user interrupts
+    while ($true) {
+        Start-Sleep -Seconds 1
+    }
 }
-
-Write-Host "Starting Flask server..."
-$backendProcess = Start-Process -FilePath "python" -ArgumentList "-m flask run" -NoNewWindow -PassThru
-
-# Register Ctrl+C (SIGINT) handler
-Register-EngineEvent PowerShell.Exiting -Action { Cleanup }
-
-Write-Host "Server is running. Press Ctrl+C to stop."
-
-# Keep script alive until user interrupts
-while ($true) {
-    Start-Sleep -Seconds 1
+catch {
+    Write-Host "`nAn error occurred: $_" -ForegroundColor Red
+    Cleanup
 }
