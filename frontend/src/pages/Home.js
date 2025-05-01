@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import CubeImageComparison from '../components/CubeImages';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -15,49 +16,72 @@ const Home = () => {
     }
   };
 
+  const goTo3DCube = () => {
+    navigate('/cube');
+  };
+
+  const goTo2DCube = () => {
+    navigate('/2dcube');
+  };
+
+  const showAbout = () => {
+    // You can implement this to show an about modal or navigate to an about page
+    alert('About this application: Learn to solve the white side of a Rubik\'s cube step by step.');
+  };
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">Learn to Solve the White Side of a Rubik's Cube</h1>
-        <p className="text-xl text-gray-600 mb-8">
-          Welcome to our interactive tutorial! We'll guide you through the process of solving the white side of a Rubik's cube step by step.
-        </p>
-        <div className="flex justify-center mb-8">
-          <img 
-            src="/images/Scrambled.jpg" 
-            alt="Scrambled Rubik's Cube" 
-            className="rounded-lg shadow-lg max-w-md w-full"
-          />
+    <div className="h-full flex flex-col items-center py-6 bg-gray-100">
+      {/* Primary content group - centered both vertically and horizontally for dominant position */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-4xl px-6">
+        {/* Primary heading - largest size for highest importance */}
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 text-center">
+          Learn to Solve the White Side of a Rubik's Cube
+        </h1>
+        
+        {/* Secondary text - smaller size, lighter color for secondary importance */}
+        <div className="text-lg text-gray-600 mb-12 text-center max-w-2xl">
+          Welcome to our interactive tutorial! We'll guide you through the process of solving 
+          the white side of a Rubik's cube step by step.
+        </div>
+        
+        {/* Visual focus - image comparison as central visual element */}
+        <div className="mb-16 w-full flex justify-center">
+          <CubeImageComparison />
         </div>
       </div>
-
-      <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">What You'll Learn</h2>
-        <ul className="list-disc ml-6 text-gray-700 space-y-2">
-          <li>Understanding the structure of a Rubik's Cube</li>
-          <li>Identifying the white edges and corners</li>
-          <li>Solving the white cross</li>
-          <li>Placing the white corners correctly</li>
-          <li>Basic algorithms and cube notation</li>
-        </ul>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">How It Works</h2>
-        <ol className="list-decimal ml-6 text-gray-700 space-y-2">
-          <li>Go through each learning module at your own pace</li>
-          <li>Practice with interactive examples</li>
-          <li>Test your knowledge with the quiz</li>
-          <li>Apply what you've learned on a real Rubik's Cube</li>
-        </ol>
-      </div>
-
-      <div className="text-center">
+      
+      {/* Action group - placed at the bottom with clear visual hierarchy */}
+      <div className="flex flex-wrap justify-center items-center gap-4 mb-8 w-full max-w-2xl px-6">
+        {/* Secondary action button */}
+        <button
+          onClick={showAbout}
+          className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition-colors w-full sm:w-32 text-center shadow-sm"
+        >
+          About
+        </button>
+        
+        {/* Primary action button - high contrast, larger size */}
         <button
           onClick={startLearning}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-xl transition duration-300 transform hover:scale-105"
+          className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors w-full sm:w-48 text-center font-medium shadow-md text-lg"
         >
-          Start Learning
+          Start Learning!
+        </button>
+        
+        {/* Secondary action button - 3D Cube */}
+        <button
+          onClick={goTo3DCube}
+          className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition-colors w-full sm:w-32 text-center shadow-sm"
+        >
+          3D Cube
+        </button>
+        
+        {/* Secondary action button - 2D Cube */}
+        <button
+          onClick={goTo2DCube}
+          className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition-colors w-full sm:w-32 text-center shadow-sm"
+        >
+          2D Cube
         </button>
       </div>
     </div>

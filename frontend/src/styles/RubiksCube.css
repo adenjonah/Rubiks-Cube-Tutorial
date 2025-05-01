@@ -1,0 +1,150 @@
+.rubiks-cube-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 10px;
+  font-family: Arial, sans-serif;
+}
+
+.cube-visualization {
+  margin: 15px 0;
+}
+
+/* Cube net layout styles */
+.cube-net {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.net-middle {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+}
+
+.net-up, .net-down, .net-left, .net-front, .net-right, .net-back {
+  display: flex;
+  justify-content: center;
+}
+
+/* Face styles */
+.face-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 3px;
+}
+
+.face-label {
+  font-weight: bold;
+  margin-bottom: 3px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.face {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #333;
+  background-color: #222;
+  padding: 1px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.face-row {
+  display: flex;
+}
+
+.face-cell {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #000;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+/* Highlight for cells affected by the last move */
+.face-cell.last-moved {
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.6);
+  animation: pulse-glow 1.5s ease-in-out 1;
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.4); }
+  50% { box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.8); }
+  100% { box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.4); }
+}
+
+/* Rotation explanation section */
+.rotation-explanation {
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-size: 0.9rem;
+  padding: 8px !important;
+  margin: 12px 0 !important;
+}
+
+.rotation-explanation h3 {
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.rotation-explanation p, .rotation-explanation li {
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.rotation-explanation ul {
+  padding-left: 20px;
+  margin: 4px 0;
+}
+
+/* Grid layout for buttons */
+.buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.buttons-grid button {
+  text-align: center;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  padding: 6px 0 !important;
+  font-size: 0.8rem !important;
+}
+
+.buttons-grid button:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .face-cell {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .buttons-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .face-cell {
+    width: 20px;
+    height: 20px;
+  }
+
+  .net-middle {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .buttons-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+} 

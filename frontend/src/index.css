@@ -1,27 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f8f9fa;
+@layer base {
+  html, body, #root {
+    @apply h-full overflow-hidden;
+  }
+  
+  html {
+    @apply antialiased;
+  }
+  
+  body {
+    @apply font-sans text-gray-900 bg-gray-100 m-0;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans;
+  }
+
+  h1 {
+    @apply text-3xl font-bold;
+  }
+  
+  h2 {
+    @apply text-2xl font-bold;
+  }
+  
+  h3 {
+    @apply text-xl font-semibold;
+  }
+  
+  h4 {
+    @apply text-lg font-semibold;
+  }
+  
+  h5 {
+    @apply text-base font-medium;
+  }
+  
+  h6 {
+    @apply text-sm font-medium;
+  }
+  
+  p {
+    @apply text-base leading-relaxed;
+  }
+  
+  a {
+    @apply text-gray-900 hover:text-gray-700 underline;
+  }
+  
+  /* Responsive font size adjustment */
+  @screen sm {
+    h1 { @apply text-3xl; }
+    h2 { @apply text-2xl; }
+  }
+  
+  @screen xs {
+    h1 { @apply text-2xl; }
+    h2 { @apply text-xl; }
+    h3 { @apply text-lg; }
+    p { @apply text-sm; }
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  .cube-container {
+    @apply perspective-800;
+  }
+  
+  .cube-display {
+    @apply transform-style-preserve-3d transition-transform duration-500;
+  }
+  
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-base font-medium rounded-md transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-gray-900 text-white hover:bg-gray-800;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-gray-900 border border-gray-300 hover:bg-gray-50;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-sm overflow-hidden;
+  }
+  
+  /* Fixed height card containers for no-scroll layouts */
+  .fixed-height-card {
+    @apply h-full flex flex-col overflow-hidden;
+  }
+  
+  .fixed-height-card-header {
+    @apply flex-shrink-0 border-b border-gray-200 px-4 py-3;
+  }
+  
+  .fixed-height-card-content {
+    @apply flex-1 overflow-auto p-4;
+  }
+  
+  .fixed-height-card-footer {
+    @apply flex-shrink-0 border-t border-gray-200 px-4 py-3;
+  }
+  
+  /* Image constraints for fixed-height layouts */
+  .img-constrained {
+    @apply max-h-full object-contain;
+    max-height: 40vh;
+  }
+  
+  .img-constrained-sm {
+    @apply max-h-full object-contain;
+    max-height: 25vh;
+  }
+  
+  /* Content containers for fixed-height layouts */
+  .content-container {
+    @apply h-full flex flex-col overflow-hidden;
+  }
+  
+  .content-header {
+    @apply flex-shrink-0 mb-2;
+  }
+  
+  .content-body {
+    @apply flex-1 overflow-auto;
+  }
+  
+  .content-footer {
+    @apply flex-shrink-0 mt-2;
+  }
 }
 
-.cube-container {
-  perspective: 800px;
-}
-
-.cube-display {
-  transform-style: preserve-3d;
-  transition: transform 0.5s;
+@layer utilities {
+  .perspective-800 {
+    perspective: 800px;
+  }
+  
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  /* Additional utilities for fixed-height layouts */
+  .h-min-content {
+    height: min-content;
+  }
+  
+  .max-h-90vh {
+    max-height: 90vh;
+  }
+  
+  .max-h-80vh {
+    max-height: 80vh;
+  }
+  
+  .max-h-70vh {
+    max-height: 70vh;
+  }
+  
+  .max-h-60vh {
+    max-height: 60vh;
+  }
 } 

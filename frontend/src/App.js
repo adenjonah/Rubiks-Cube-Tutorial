@@ -5,23 +5,22 @@ import LearningModule from './pages/LearningModule';
 import Quiz from './pages/Quiz';
 import Results from './pages/Results';
 import Cube from './pages/Cube';
-import Navbar from './components/Navbar';
+import Cube2D from './pages/Cube2D';
+import StyleGuide from './pages/StyleGuide';
+import Layout from './components/Layout';
 
 function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <div className="min-h-screen bg-gray-100">
-        <Navbar />
-        <div className="container mx-auto px-4 py-10">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/learn/:moduleId" element={<LearningModule />} />
-            <Route path="/quiz/:questionId" element={<Quiz />} />
-            <Route path="/results" element={<Results />} />
-            <Route path="/cube" element={<Cube />} />
-          </Routes>
-        </div>
-      </div>
+      <Routes>
+        <Route path="/" element={<Layout><Home /></Layout>} />
+        <Route path="/learn/:moduleId" element={<Layout><LearningModule /></Layout>} />
+        <Route path="/quiz/:questionId" element={<Layout><Quiz /></Layout>} />
+        <Route path="/results" element={<Layout><Results /></Layout>} />
+        <Route path="/cube" element={<Layout><Cube /></Layout>} />
+        <Route path="/2dcube" element={<Cube2D />} />
+        <Route path="/style-guide" element={<Layout><StyleGuide /></Layout>} />
+      </Routes>
     </Router>
   );
 }
