@@ -1,10 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import axios from 'axios';
 import { getFaceIndex, getColorFromState, COLORS, FACE_INDICES } from '../utils/cubeUtils';
 
 const API_BASE_URL = 'http://127.0.0.1:5000';
+
+// Configure axios defaults to always send cookies
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+axios.defaults.headers.common['Accept'] = 'application/json';
 
 // Move notation and keyboard mappings
 const MOVE_NOTATION = {
@@ -40,130 +45,55 @@ const RubiksCube3D = () => {
   const animationFrameRef = useRef(null);
   const cubePiecesRef = useRef({});
 
-  // Initialize the scene and renderer
-  useEffect(() => {
-    if (!mountRef.current) return;
+  // Get rotation axis and direction for cube moves
+  const getRotationAxisAndAngle = useCallback((move) => {
+    const face = move.charAt(0);
+    const isCounterClockwise = move.includes("'");
     
-    const container = mountRef.current;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-
-    // Scene setup
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0); // Lighter background for better contrast
-    sceneRef.current = scene;
-    
-    // Camera setup
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    // Position camera to see red (front), blue (right), and white (up) faces
-    camera.position.set(4, 3, 5); 
-    camera.lookAt(0, 0, 0);
-    cameraRef.current = camera;
-    
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
-    rendererRef.current = renderer;
-    container.appendChild(renderer.domElement);
-    
-    // Controls setup
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.rotateSpeed = 0.7;
-    controls.minDistance = 5;
-    controls.maxDistance = 15;
-    controlsRef.current = controls;
-    
-    // Enhanced lighting for better color visibility
-    // Ambient light (soft overall illumination)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-    
-    // Main directional light (simulates sun)
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 10, 7); // Light coming from top-right-front
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 1024;
-    directionalLight.shadow.mapSize.height = 1024;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 50;
-    directionalLight.shadow.bias = -0.001; // Reduce shadow acne
-    scene.add(directionalLight);
-    
-    // Additional fill light from opposite direction for better face visibility
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
-    fillLight.position.set(-5, 0, -5); // Light from back-left
-    scene.add(fillLight);
-    
-    // Create cube group
-    const cubeGroup = new THREE.Group();
-    scene.add(cubeGroup);
-    cubeGroupRef.current = cubeGroup;
-    
-    // Create rotation group
-    const rotationGroup = new THREE.Group();
-    scene.add(rotationGroup);
-    rotationGroupRef.current = rotationGroup;
-    
-    // Animation loop
-    const animate = () => {
-      animationFrameRef.current = requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-    animate();
-    
-    // Handle window resize
-    const handleResize = () => {
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    // Set default view orientation
-    const setDefaultView = () => {
-      if (controlsRef.current) {
-        // Set the camera to view the cube from an angle where red (front), 
-        // blue (right), and white (up) faces are visible
-        camera.position.set(4, 3, 5);
-        camera.lookAt(0, 0, 0);
-        controlsRef.current.update();
-      }
-    };
-    
-    // Set the default view after a short delay to ensure controls are initialized
-    setTimeout(setDefaultView, 100);
-    
-    // Cleanup
-    return () => {
-      cancelAnimationFrame(animationFrameRef.current);
-      window.removeEventListener('resize', handleResize);
-      
-      if (rendererRef.current && rendererRef.current.domElement) {
-        container.removeChild(rendererRef.current.domElement);
-      }
-      
-      if (controlsRef.current) {
-        controlsRef.current.dispose();
-      }
-      
-      if (rendererRef.current) {
-        rendererRef.current.dispose();
-      }
-    };
+    // For each face, define the axis and correct rotation direction to match backend behavior
+    switch (face) {
+      case 'F': // Front face (Z+)
+        // Front face rotations need to match backend 
+        return {
+          axis: new THREE.Vector3(0, 0, 1),
+          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2
+        };
+      case 'B': // Back face (Z-)
+        // Back face rotations need to match backend behavior
+        return {
+          axis: new THREE.Vector3(0, 0, -1),
+          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2 
+        };
+      case 'L': // Left face (X-)
+        return {
+          axis: new THREE.Vector3(-1, 0, 0),
+          angle: isCounterClockwise ? Math.PI/2 : -Math.PI/2
+        };
+      case 'R': // Right face (X+)
+        return {
+          axis: new THREE.Vector3(1, 0, 0),
+          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2
+        };
+      case 'U': // Up face (Y+)
+        return {
+          axis: new THREE.Vector3(0, 1, 0),
+          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2
+        };
+      case 'D': // Down face (Y-)
+        return {
+          axis: new THREE.Vector3(0, -1, 0),
+          angle: isCounterClockwise ? Math.PI/2 : -Math.PI/2
+        };
+      default:
+        return {
+          axis: new THREE.Vector3(0, 1, 0),
+          angle: Math.PI/2
+        };
+    }
   }, []);
 
   // Create individual cube pieces with updated debugging support
-  const createCubes = () => {
+  const createCubes = useCallback(() => {
     if (!cubeState || !cubeGroupRef.current) return;
     
     console.log("Creating cubes with state:", JSON.stringify(cubeState));
@@ -299,57 +229,10 @@ const RubiksCube3D = () => {
         }
       }
     }
-  };
-  
-  // Get rotation axis and direction for cube moves
-  const getRotationAxisAndAngle = (move) => {
-    const face = move.charAt(0);
-    const isCounterClockwise = move.includes("'");
-    
-    // For each face, define the axis and correct rotation direction to match backend behavior
-    switch (face) {
-      case 'F': // Front face (Z+)
-        // Front face rotations need to match backend 
-        return {
-          axis: new THREE.Vector3(0, 0, 1),
-          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2
-        };
-      case 'B': // Back face (Z-)
-        // Back face rotations need to match backend behavior
-        return {
-          axis: new THREE.Vector3(0, 0, -1),
-          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2 
-        };
-      case 'L': // Left face (X-)
-        return {
-          axis: new THREE.Vector3(-1, 0, 0),
-          angle: isCounterClockwise ? Math.PI/2 : -Math.PI/2
-        };
-      case 'R': // Right face (X+)
-        return {
-          axis: new THREE.Vector3(1, 0, 0),
-          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2
-        };
-      case 'U': // Up face (Y+)
-        return {
-          axis: new THREE.Vector3(0, 1, 0),
-          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2
-        };
-      case 'D': // Down face (Y-)
-        return {
-          axis: new THREE.Vector3(0, -1, 0),
-          angle: isCounterClockwise ? Math.PI/2 : -Math.PI/2
-        };
-      default:
-        return {
-          axis: new THREE.Vector3(0, 1, 0),
-          angle: Math.PI/2
-        };
-    }
-  };
+  }, [cubeState, debugMode]);
   
   // Animate a cube move
-  const animateMove = (move) => {
+  const animateMove = useCallback((move) => {
     if (!cubeGroupRef.current || !sceneRef.current) return;
     
     const face = move.charAt(0);
@@ -439,22 +322,217 @@ const RubiksCube3D = () => {
     };
     
     animationFrameRef.current = requestAnimationFrame(animate);
-  };
+  }, [getRotationAxisAndAngle]);
+  
+  // Handle a cube move
+  const handleMove = useCallback(async (move) => {
+    if (isRotating) return;
+    
+    try {
+      setIsRotating(true);
+      
+      // Start animation
+      animateMove(move);
+      
+      // Create a deep copy of the current state to ensure we're using the correct state
+      const currentCubeState = JSON.parse(JSON.stringify(cubeState));
+      
+      console.log(`Sending move ${move} to backend with current state:`, JSON.stringify(currentCubeState));
+      const response = await axios.post(`${API_BASE_URL}/api/cube/move`, {
+        move,
+        currentState: currentCubeState
+      });
+      
+      // Update state after animation finishes
+      setTimeout(() => {
+        if (response.data && response.data.cubeState) {
+          console.log(`Received updated state after move ${move}:`, JSON.stringify(response.data.cubeState));
+          
+          // Get the state from the backend
+          const newState = JSON.parse(JSON.stringify(response.data.cubeState));
+          
+          // Apply the new state directly
+          if (Array.isArray(newState) && newState.length === 6) {
+            console.log("Setting cube state to:", JSON.stringify(newState));
+            setCubeState(newState);
+            setMoveHistory(prev => [...prev, move]);
+          } else {
+            console.error("Invalid state received from backend:", newState);
+            setErrorMessage("Invalid cube state received");
+          }
+        } else {
+          console.error("No cube state in response:", response);
+          setErrorMessage("Failed to update cube state");
+        }
+        setIsRotating(false);
+      }, 350);
+    } catch (error) {
+      console.error('Error making move:', error);
+      setErrorMessage('Failed to make move');
+      setIsRotating(false);
+    }
+  }, [cubeState, isRotating, animateMove]);
+  
+  // Handle cube reset
+  const handleReset = useCallback(async () => {
+    if (isRotating) return;
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/cube/reset`);
+      
+      if (response.data && response.data.cubeState) {
+        console.log("Reset cube state received:", JSON.stringify(response.data.cubeState));
+        // Create a deep copy of the state to prevent reference issues
+        const resetState = JSON.parse(JSON.stringify(response.data.cubeState));
+        setCubeState(resetState);
+        setMoveHistory([]);
+      } else {
+        console.error("No cube state in response:", response);
+        setErrorMessage("Failed to reset cube state");
+      }
+    } catch (error) {
+      console.error('Error resetting cube:', error);
+      setErrorMessage('Failed to reset cube');
+    }
+  }, [isRotating]);
+
+  // Initialize the scene and renderer
+  useEffect(() => {
+    if (!mountRef.current) return;
+    
+    const container = mountRef.current;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0); // Lighter background for better contrast
+    sceneRef.current = scene;
+    
+    // Camera setup
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    // Position camera to see red (front), blue (right), and white (up) faces
+    camera.position.set(4, 3, 5); 
+    camera.lookAt(0, 0, 0);
+    cameraRef.current = camera;
+    
+    // Renderer setup
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+    rendererRef.current = renderer;
+    container.appendChild(renderer.domElement);
+    
+    // Controls setup
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.7;
+    controls.minDistance = 5;
+    controls.maxDistance = 15;
+    controlsRef.current = controls;
+    
+    // Enhanced lighting for better color visibility
+    // Ambient light (soft overall illumination)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    
+    // Main directional light (simulates sun)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 7); // Light coming from top-right-front
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 1024;
+    directionalLight.shadow.mapSize.height = 1024;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 50;
+    directionalLight.shadow.bias = -0.001; // Reduce shadow acne
+    scene.add(directionalLight);
+    
+    // Additional fill light from opposite direction for better face visibility
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    fillLight.position.set(-5, 0, -5); // Light from back-left
+    scene.add(fillLight);
+    
+    // Create cube group
+    const cubeGroup = new THREE.Group();
+    scene.add(cubeGroup);
+    cubeGroupRef.current = cubeGroup;
+    
+    // Create rotation group
+    const rotationGroup = new THREE.Group();
+    scene.add(rotationGroup);
+    rotationGroupRef.current = rotationGroup;
+    
+    // Animation loop
+    const animate = () => {
+      animationFrameRef.current = requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    };
+    animate();
+    
+    // Handle window resize
+    const handleResize = () => {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Set default view orientation
+    const setDefaultView = () => {
+      if (controlsRef.current) {
+        // Set the camera to view the cube from an angle where red (front), 
+        // blue (right), and white (up) faces are visible
+        camera.position.set(4, 3, 5);
+        camera.lookAt(0, 0, 0);
+        controlsRef.current.update();
+      }
+    };
+    
+    // Set the default view after a short delay to ensure controls are initialized
+    setTimeout(setDefaultView, 100);
+    
+    // Cleanup
+    return () => {
+      cancelAnimationFrame(animationFrameRef.current);
+      window.removeEventListener('resize', handleResize);
+      
+      if (rendererRef.current && rendererRef.current.domElement) {
+        container.removeChild(rendererRef.current.domElement);
+      }
+      
+      if (controlsRef.current) {
+        controlsRef.current.dispose();
+      }
+      
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+    };
+  }, []);
 
   // Fetch the initial cube state
   useEffect(() => {
     const fetchCubeState = async () => {
       try {
         console.log("Fetching initial cube state...");
-        const response = await axios.get(`${API_BASE_URL}/api/cube/state`, {
-          withCredentials: true
-        });
+        const response = await axios.get(`${API_BASE_URL}/api/cube/state`);
         
-        if (response.data.cubeState) {
+        if (response.data && response.data.cubeState) {
           console.log("Initial cube state received:", JSON.stringify(response.data.cubeState));
           // Create a deep copy of the state to prevent reference issues
           const initialState = JSON.parse(JSON.stringify(response.data.cubeState));
           setCubeState(initialState);
+        } else {
+          console.error("No cube state in response:", response);
+          setErrorMessage("Failed to load initial cube state");
         }
       } catch (error) {
         console.error('Error fetching cube state:', error);
@@ -471,7 +549,7 @@ const RubiksCube3D = () => {
       console.log("Creating cubes with state:", JSON.stringify(cubeState));
       createCubes();
     }
-  }, [cubeState]);
+  }, [cubeState, createCubes]);
   
   // Handle keyboard controls
   useEffect(() => {
@@ -479,13 +557,22 @@ const RubiksCube3D = () => {
       if (isRotating) return;
       
       const key = e.key;
+      console.log(`Key pressed: ${key}`);
       
       // Find the move that matches this key
+      let moveFound = false;
       Object.entries(MOVE_NOTATION).forEach(([move, info]) => {
+        // Exact match of the key
         if (info.key === key) {
+          console.log(`Executing move ${move} for key ${key}`);
           handleMove(move);
+          moveFound = true;
         }
       });
+      
+      if (!moveFound) {
+        console.log(`No move found for key: ${key}`);
+      }
     };
     
     window.addEventListener('keydown', handleKeyDown);
@@ -493,76 +580,7 @@ const RubiksCube3D = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isRotating]);
-  
-  // Handle a cube move
-  const handleMove = async (move) => {
-    if (isRotating) return;
-    
-    try {
-      setIsRotating(true);
-      
-      // Start animation
-      animateMove(move);
-      
-      // Create a deep copy of the current state to ensure we're using the correct state
-      const currentCubeState = JSON.parse(JSON.stringify(cubeState));
-      
-      console.log(`Sending move ${move} to backend with current state:`, JSON.stringify(currentCubeState));
-      const response = await axios.post(`${API_BASE_URL}/api/cube/move`, {
-        move,
-        currentState: currentCubeState
-      }, {
-        withCredentials: true
-      });
-      
-      // Update state after animation finishes
-      setTimeout(() => {
-        if (response.data.cubeState) {
-          console.log(`Received updated state after move ${move}:`, JSON.stringify(response.data.cubeState));
-          
-          // Get the state from the backend
-          const newState = JSON.parse(JSON.stringify(response.data.cubeState));
-          
-          // Apply the new state directly
-          if (Array.isArray(newState) && newState.length === 6) {
-            console.log("Setting cube state to:", JSON.stringify(newState));
-            setCubeState(newState);
-            setMoveHistory(prev => [...prev, move]);
-          } else {
-            console.error("Invalid state received from backend:", newState);
-            setErrorMessage("Invalid cube state received");
-          }
-        }
-      }, 350);
-    } catch (error) {
-      console.error('Error making move:', error);
-      setErrorMessage('Failed to make move');
-      setIsRotating(false);
-    }
-  };
-  
-  // Handle cube reset
-  const handleReset = async () => {
-    if (isRotating) return;
-    
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/cube/reset`, {}, {
-        withCredentials: true
-      });
-      
-      if (response.data.cubeState) {
-        console.log("Reset cube state received:", JSON.stringify(response.data.cubeState));
-        // Create a deep copy of the state to prevent reference issues
-        const resetState = JSON.parse(JSON.stringify(response.data.cubeState));
-        setCubeState(resetState);
-        setMoveHistory([]);
-      }
-    } catch (error) {
-      console.error('Error resetting cube:', error);
-      setErrorMessage('Failed to reset cube');
-    }
-  };
+  }, [isRotating, handleMove]);
 
   return (
     <div className="flex flex-col items-center">
@@ -615,7 +633,10 @@ const RubiksCube3D = () => {
               className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               title={info.description}
             >
-              {move}
+              <div className="flex flex-col items-center">
+                <span>{move}</span>
+                <span className="text-xs mt-1 opacity-70">[{info.key}]</span>
+              </div>
             </button>
           ))}
         </div>

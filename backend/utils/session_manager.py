@@ -2,6 +2,7 @@ from flask import session
 import time
 from datetime import datetime
 import copy
+import uuid
 
 # Global state dictionary as a fallback for session
 global_state = {}
@@ -15,8 +16,10 @@ def init_user_data():
     # Generate a unique user ID if not present
     if 'user_id' not in session:
         print("Creating new user_id - session cookie not found")
-        session['user_id'] = str(time.time())
+        # Use a UUID for more reliable session IDs
+        session['user_id'] = str(uuid.uuid4())
         session.modified = True
+        session.permanent = True  # Make session persist longer
     else:
         print(f"Reusing existing user_id: {session['user_id']}")
     
@@ -55,12 +58,29 @@ def init_user_data():
 
 # Get the user's cube state
 def get_cube_state(user_id):
-    return copy.deepcopy(global_state[user_id]['cube_state'])
+    if user_id in global_state:
+        return copy.deepcopy(global_state[user_id]['cube_state'])
+    else:
+        # Return default state if user_id not found
+        print(f"User {user_id} not found in global state, returning default state")
+        return [
+            ['green'] * 9,   # Left (0)
+            ['blue'] * 9,    # Right (1)
+            ['white'] * 9,   # Up (2)
+            ['yellow'] * 9,  # Down (3)
+            ['red'] * 9,     # Front (4)
+            ['orange'] * 9   # Back (5)
+        ]
 
 # Set the user's cube state
 def set_cube_state(user_id, new_state):
     # Update both global state and session
+    if user_id not in global_state:
+        # If user_id not in global state, initialize it
+        init_user_data()
+    
     global_state[user_id]['cube_state'] = copy.deepcopy(new_state)
+    
     if 'user_data' in session:
         session['user_data']['cube_state'] = copy.deepcopy(new_state)
         session.modified = True

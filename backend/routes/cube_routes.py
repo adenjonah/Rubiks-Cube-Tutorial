@@ -27,7 +27,7 @@ def make_cube_move():
         return jsonify({'error': 'No move specified'}), 400
     
     # Use the state sent from the frontend if available, otherwise use the session state
-    if current_state and len(current_state) == 6:
+    if current_state and isinstance(current_state, list) and len(current_state) == 6:
         print(f"Using state from frontend request for move {move}")
         # Update the session state with the frontend state
         set_cube_state(user_id, current_state)
