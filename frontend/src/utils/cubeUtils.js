@@ -1,78 +1,63 @@
 /**
- * Helper function to get the correct face index based on cube position
- * @param {number} x - X coordinate (-1, 0, 1)
- * @param {number} y - Y coordinate (-1, 0, 1)
- * @param {number} z - Z coordinate (-1, 0, 1)
- * @param {string} face - Face identifier ('right', 'left', 'up', 'down', 'front', 'back')
- * @returns {number} The index of the face piece (0-8)
+ * Maps a cube position (x,y,z) to the corresponding index in the face array
+ * @param {number} x - X coordinate (-1, 0, or 1)
+ * @param {number} y - Y coordinate (-1, 0, or 1)
+ * @param {number} z - Z coordinate (-1, 0, or 1)
+ * @param {string} face - Which face to get index for ('right', 'left', 'up', 'down', 'front', 'back')
+ * @returns {number} - Index in the face array (0-8)
  */
 export const getFaceIndex = (x, y, z, face) => {
-  // Convert from -1,0,1 coordinates to 0,1,2 indices
-  const i = x + 1;
-  const j = y + 1;
-  const k = z + 1;
-  
-  // Calculate the index based on which face we're looking at
-  // This follows the standard Rubik's cube notation and face indexing
-  
-  if (face === 'right') {  // x = 1 face
-    // Right face indices are arranged:
-    // 0 1 2
-    // 3 4 5
-    // 6 7 8
-    // Where 0 is top-back, 2 is top-front, 6 is bottom-back, 8 is bottom-front
-    return (j * 3) + k;
+  switch (face) {
+    case 'right': // x = 1
+      return (1 - y) * 3 + (1 - z);
+    case 'left': // x = -1
+      return (1 - y) * 3 + (1 + z);
+    case 'up': // y = 1
+      return (1 - z) * 3 + (1 + x);
+    case 'down': // y = -1
+      return (1 + z) * 3 + (1 + x);
+    case 'front': // z = 1
+      return (1 - y) * 3 + (1 + x);
+    case 'back': // z = -1
+      return (1 - y) * 3 + (1 - x);
+    default:
+      return -1;
   }
-  
-  if (face === 'left') {   // x = -1 face
-    // Left face indices are arranged:
-    // 0 1 2
-    // 3 4 5
-    // 6 7 8
-    // Where 0 is top-back, 2 is top-front, 6 is bottom-back, 8 is bottom-front
-    // Note: Z is reversed compared to right face because it's the opposite side
-    return (j * 3) + (2 - k);
+};
+
+/**
+ * Gets the color for a face based on the cube state
+ * @param {Array} cubeState - The cube state from the backend
+ * @param {number} faceIndex - Index of the face (0-5)
+ * @param {number} pieceIndex - Index of the piece on the face (0-8) 
+ * @returns {string} - Color name
+ */
+export const getColorFromState = (cubeState, faceIndex, pieceIndex) => {
+  if (!cubeState || !cubeState[faceIndex] || pieceIndex < 0 || pieceIndex > 8) {
+    return 'gray';
   }
-  
-  if (face === 'up') {     // y = 1 face
-    // Up face indices are arranged:
-    // 0 1 2
-    // 3 4 5
-    // 6 7 8
-    // Where 0 is back-left, 2 is back-right, 6 is front-left, 8 is front-right
-    return (k * 3) + i;
-  }
-  
-  if (face === 'down') {   // y = -1 face
-    // Down face indices are arranged:
-    // 0 1 2
-    // 3 4 5
-    // 6 7 8
-    // Where 0 is back-left, 2 is back-right, 6 is front-left, 8 is front-right
-    // Note: Z is reversed compared to up face because it's viewed from bottom
-    return ((2 - k) * 3) + i;
-  }
-  
-  if (face === 'front') {  // z = 1 face
-    // Front face indices are arranged:
-    // 0 1 2
-    // 3 4 5
-    // 6 7 8
-    // Where 0 is top-left, 2 is top-right, 6 is bottom-left, 8 is bottom-right
-    return ((2 - j) * 3) + i;
-  }
-  
-  if (face === 'back') {   // z = -1 face
-    // Back face indices are arranged:
-    // 0 1 2
-    // 3 4 5
-    // 6 7 8
-    // Where 0 is top-right, 2 is top-left, 6 is bottom-right, 8 is bottom-left
-    // Note: X is reversed compared to front face because it's viewed from back
-    return ((2 - j) * 3) + (2 - i);
-  }
-  
-  return 0; // Default case
+  return cubeState[faceIndex][pieceIndex];
+};
+
+// Standard Rubik's cube color scheme
+export const COLORS = {
+  white: 0xffffff,  // Up
+  yellow: 0xffff00, // Down
+  red: 0xff0000,    // Front
+  orange: 0xffa500, // Back
+  blue: 0x0000ff,   // Right
+  green: 0x00ff00,  // Left
+  gray: 0x111111    // Hidden faces
+};
+
+// Face indices mapping
+export const FACE_INDICES = {
+  RIGHT: 0,  // Blue (X+)
+  LEFT: 1,   // Green (X-)
+  UP: 2,     // White (Y+)
+  DOWN: 3,   // Yellow (Y-)
+  FRONT: 4,  // Red (Z+)
+  BACK: 5    // Orange (Z-)
 };
 
 /**
