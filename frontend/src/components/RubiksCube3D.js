@@ -28,6 +28,7 @@ const RubiksCube3D = () => {
   const [moveHistory, setMoveHistory] = useState([]);
   const [isRotating, setIsRotating] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [debugMode, setDebugMode] = useState(false);
 
   // Three.js objects
   const sceneRef = useRef(null);
@@ -49,12 +50,13 @@ const RubiksCube3D = () => {
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf5f5f0);
+    scene.background = new THREE.Color(0xf0f0f0); // Lighter background for better contrast
     sceneRef.current = scene;
     
     // Camera setup
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(3, 3, 5);
+    // Position camera to see red (front), blue (right), and white (up) faces
+    camera.position.set(4, 3, 5); 
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
     
@@ -63,6 +65,7 @@ const RubiksCube3D = () => {
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
     rendererRef.current = renderer;
     container.appendChild(renderer.domElement);
     
@@ -75,16 +78,26 @@ const RubiksCube3D = () => {
     controls.maxDistance = 15;
     controlsRef.current = controls;
     
-    // Lighting
+    // Enhanced lighting for better color visibility
+    // Ambient light (soft overall illumination)
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
     
+    // Main directional light (simulates sun)
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 10, 7);
+    directionalLight.position.set(5, 10, 7); // Light coming from top-right-front
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 1024;
     directionalLight.shadow.mapSize.height = 1024;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 50;
+    directionalLight.shadow.bias = -0.001; // Reduce shadow acne
     scene.add(directionalLight);
+    
+    // Additional fill light from opposite direction for better face visibility
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    fillLight.position.set(-5, 0, -5); // Light from back-left
+    scene.add(fillLight);
     
     // Create cube group
     const cubeGroup = new THREE.Group();
@@ -116,6 +129,20 @@ const RubiksCube3D = () => {
     
     window.addEventListener('resize', handleResize);
     
+    // Set default view orientation
+    const setDefaultView = () => {
+      if (controlsRef.current) {
+        // Set the camera to view the cube from an angle where red (front), 
+        // blue (right), and white (up) faces are visible
+        camera.position.set(4, 3, 5);
+        camera.lookAt(0, 0, 0);
+        controlsRef.current.update();
+      }
+    };
+    
+    // Set the default view after a short delay to ensure controls are initialized
+    setTimeout(setDefaultView, 100);
+    
     // Cleanup
     return () => {
       cancelAnimationFrame(animationFrameRef.current);
@@ -135,9 +162,17 @@ const RubiksCube3D = () => {
     };
   }, []);
 
-  // Create individual cube pieces
+  // Create individual cube pieces with updated debugging support
   const createCubes = () => {
     if (!cubeState || !cubeGroupRef.current) return;
+    
+    console.log("Creating cubes with state:", JSON.stringify(cubeState));
+    
+    // Debug check to ensure we have a valid state
+    if (!Array.isArray(cubeState) || cubeState.length !== 6) {
+      console.error("Invalid cube state structure in createCubes:", cubeState);
+      return;
+    }
     
     // Clear existing cubes
     while (cubeGroupRef.current.children.length > 0) {
@@ -163,76 +198,85 @@ const RubiksCube3D = () => {
           const geometry = new THREE.BoxGeometry(0.95, 0.95, 0.95);
           const materials = [];
           
-          // Right face (X+)
+          // Create materials with enhanced properties
+          const createFaceMaterial = (isVisible, faceIndex, pieceIndex) => {
+            if (isVisible) {
+              const material = new THREE.MeshPhongMaterial({
+                color: COLORS[getColorFromState(cubeState, faceIndex, pieceIndex)],
+                shininess: 50,
+                specular: 0x222222,
+                emissive: 0x000000,
+                flatShading: false
+              });
+              
+              // If debug mode is on, add a texture with the index number
+              if (debugMode && pieceIndex >= 0) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                
+                // Fill with the same color
+                const color = getColorFromState(cubeState, faceIndex, pieceIndex);
+                ctx.fillStyle = color;
+                ctx.fillRect(0, 0, 128, 128);
+                
+                // Add index number
+                ctx.fillStyle = 'black';
+                ctx.font = 'bold 80px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(pieceIndex.toString(), 64, 64);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                material.map = texture;
+              }
+              
+              return material;
+            } else {
+              return new THREE.MeshPhongMaterial({
+                color: COLORS.gray,
+                shininess: 10,
+                transparent: true,
+                opacity: 0.95
+              });
+            }
+          };
+          
+          // Right face (X+) - Blue
           const rightIdx = x === 1 ? getFaceIndex(x, y, z, 'right') : -1;
-          materials.push(
-            x === 1 
-              ? new THREE.MeshPhongMaterial({ 
-                  color: COLORS[getColorFromState(cubeState, FACE_INDICES.RIGHT, rightIdx)],
-                  shininess: 30
-                })
-              : new THREE.MeshPhongMaterial({ color: COLORS.gray })
-          );
+          materials.push(createFaceMaterial(x === 1, FACE_INDICES.RIGHT, rightIdx));
           
-          // Left face (X-)
+          // Left face (X-) - Green
           const leftIdx = x === -1 ? getFaceIndex(x, y, z, 'left') : -1;
-          materials.push(
-            x === -1 
-              ? new THREE.MeshPhongMaterial({ 
-                  color: COLORS[getColorFromState(cubeState, FACE_INDICES.LEFT, leftIdx)],
-                  shininess: 30
-                })
-              : new THREE.MeshPhongMaterial({ color: COLORS.gray })
-          );
+          materials.push(createFaceMaterial(x === -1, FACE_INDICES.LEFT, leftIdx));
           
-          // Up face (Y+)
+          // Up face (Y+) - White
           const upIdx = y === 1 ? getFaceIndex(x, y, z, 'up') : -1;
-          materials.push(
-            y === 1 
-              ? new THREE.MeshPhongMaterial({ 
-                  color: COLORS[getColorFromState(cubeState, FACE_INDICES.UP, upIdx)],
-                  shininess: 30
-                })
-              : new THREE.MeshPhongMaterial({ color: COLORS.gray })
-          );
+          materials.push(createFaceMaterial(y === 1, FACE_INDICES.UP, upIdx));
           
-          // Down face (Y-)
+          // Down face (Y-) - Yellow
           const downIdx = y === -1 ? getFaceIndex(x, y, z, 'down') : -1;
-          materials.push(
-            y === -1 
-              ? new THREE.MeshPhongMaterial({ 
-                  color: COLORS[getColorFromState(cubeState, FACE_INDICES.DOWN, downIdx)],
-                  shininess: 30
-                })
-              : new THREE.MeshPhongMaterial({ color: COLORS.gray })
-          );
+          materials.push(createFaceMaterial(y === -1, FACE_INDICES.DOWN, downIdx));
           
-          // Front face (Z+)
+          // Front face (Z+) - Red
           const frontIdx = z === 1 ? getFaceIndex(x, y, z, 'front') : -1;
-          materials.push(
-            z === 1 
-              ? new THREE.MeshPhongMaterial({ 
-                  color: COLORS[getColorFromState(cubeState, FACE_INDICES.FRONT, frontIdx)],
-                  shininess: 30
-                })
-              : new THREE.MeshPhongMaterial({ color: COLORS.gray })
-          );
+          materials.push(createFaceMaterial(z === 1, FACE_INDICES.FRONT, frontIdx));
           
-          // Back face (Z-)
+          // Back face (Z-) - Orange
           const backIdx = z === -1 ? getFaceIndex(x, y, z, 'back') : -1;
-          materials.push(
-            z === -1 
-              ? new THREE.MeshPhongMaterial({ 
-                  color: COLORS[getColorFromState(cubeState, FACE_INDICES.BACK, backIdx)],
-                  shininess: 30
-                })
-              : new THREE.MeshPhongMaterial({ color: COLORS.gray })
-          );
+          materials.push(createFaceMaterial(z === -1, FACE_INDICES.BACK, backIdx));
           
           const piece = new THREE.Mesh(geometry, materials);
           piece.position.set(x, y, z);
           piece.castShadow = true;
           piece.receiveShadow = true;
+          
+          // Add a thin black edge around each cubelet
+          const edgeGeometry = new THREE.EdgesGeometry(geometry);
+          const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 });
+          const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+          piece.add(edges);
           
           // Store face indices in userData for reference
           piece.userData = {
@@ -257,18 +301,50 @@ const RubiksCube3D = () => {
     }
   };
   
-  // Get rotation axis for cube moves
-  const getRotationAxis = (move) => {
+  // Get rotation axis and direction for cube moves
+  const getRotationAxisAndAngle = (move) => {
     const face = move.charAt(0);
+    const isCounterClockwise = move.includes("'");
     
+    // For each face, define the axis and correct rotation direction to match backend behavior
     switch (face) {
-      case 'F': return new THREE.Vector3(0, 0, 1); // Front face - Z axis
-      case 'B': return new THREE.Vector3(0, 0, -1); // Back face - Z axis
-      case 'L': return new THREE.Vector3(-1, 0, 0); // Left face - X axis
-      case 'R': return new THREE.Vector3(1, 0, 0); // Right face - X axis
-      case 'U': return new THREE.Vector3(0, 1, 0); // Up face - Y axis
-      case 'D': return new THREE.Vector3(0, -1, 0); // Down face - Y axis
-      default: return new THREE.Vector3(0, 1, 0);
+      case 'F': // Front face (Z+)
+        // Front face rotations need to match backend 
+        return {
+          axis: new THREE.Vector3(0, 0, 1),
+          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2
+        };
+      case 'B': // Back face (Z-)
+        // Back face rotations need to match backend behavior
+        return {
+          axis: new THREE.Vector3(0, 0, -1),
+          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2 
+        };
+      case 'L': // Left face (X-)
+        return {
+          axis: new THREE.Vector3(-1, 0, 0),
+          angle: isCounterClockwise ? Math.PI/2 : -Math.PI/2
+        };
+      case 'R': // Right face (X+)
+        return {
+          axis: new THREE.Vector3(1, 0, 0),
+          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2
+        };
+      case 'U': // Up face (Y+)
+        return {
+          axis: new THREE.Vector3(0, 1, 0),
+          angle: isCounterClockwise ? -Math.PI/2 : Math.PI/2
+        };
+      case 'D': // Down face (Y-)
+        return {
+          axis: new THREE.Vector3(0, -1, 0),
+          angle: isCounterClockwise ? Math.PI/2 : -Math.PI/2
+        };
+      default:
+        return {
+          axis: new THREE.Vector3(0, 1, 0),
+          angle: Math.PI/2
+        };
     }
   };
   
@@ -277,9 +353,7 @@ const RubiksCube3D = () => {
     if (!cubeGroupRef.current || !sceneRef.current) return;
     
     const face = move.charAt(0);
-    const isCounterClockwise = move.includes("'");
-    const angle = isCounterClockwise ? -Math.PI/2 : Math.PI/2;
-    const rotationAxis = getRotationAxis(move);
+    const { axis, angle } = getRotationAxisAndAngle(move);
     
     // Get cubes to rotate based on the face
     const cubesToRotate = [];
@@ -336,7 +410,7 @@ const RubiksCube3D = () => {
       
       // Calculate rotation for this frame
       const rotation = progress * angle;
-      rotationGroupRef.current.setRotationFromAxisAngle(rotationAxis, rotation);
+      rotationGroupRef.current.setRotationFromAxisAngle(axis, rotation);
       
       if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(animate);
@@ -371,12 +445,16 @@ const RubiksCube3D = () => {
   useEffect(() => {
     const fetchCubeState = async () => {
       try {
+        console.log("Fetching initial cube state...");
         const response = await axios.get(`${API_BASE_URL}/api/cube/state`, {
           withCredentials: true
         });
         
         if (response.data.cubeState) {
-          setCubeState(response.data.cubeState);
+          console.log("Initial cube state received:", JSON.stringify(response.data.cubeState));
+          // Create a deep copy of the state to prevent reference issues
+          const initialState = JSON.parse(JSON.stringify(response.data.cubeState));
+          setCubeState(initialState);
         }
       } catch (error) {
         console.error('Error fetching cube state:', error);
@@ -390,6 +468,7 @@ const RubiksCube3D = () => {
   // Update cube visualization when state changes
   useEffect(() => {
     if (cubeState) {
+      console.log("Creating cubes with state:", JSON.stringify(cubeState));
       createCubes();
     }
   }, [cubeState]);
@@ -426,10 +505,13 @@ const RubiksCube3D = () => {
       // Start animation
       animateMove(move);
       
-      // Send move to backend
+      // Create a deep copy of the current state to ensure we're using the correct state
+      const currentCubeState = JSON.parse(JSON.stringify(cubeState));
+      
+      console.log(`Sending move ${move} to backend with current state:`, JSON.stringify(currentCubeState));
       const response = await axios.post(`${API_BASE_URL}/api/cube/move`, {
         move,
-        currentState: cubeState
+        currentState: currentCubeState
       }, {
         withCredentials: true
       });
@@ -437,8 +519,20 @@ const RubiksCube3D = () => {
       // Update state after animation finishes
       setTimeout(() => {
         if (response.data.cubeState) {
-          setCubeState(response.data.cubeState);
-          setMoveHistory(prev => [...prev, move]);
+          console.log(`Received updated state after move ${move}:`, JSON.stringify(response.data.cubeState));
+          
+          // Get the state from the backend
+          const newState = JSON.parse(JSON.stringify(response.data.cubeState));
+          
+          // Apply the new state directly
+          if (Array.isArray(newState) && newState.length === 6) {
+            console.log("Setting cube state to:", JSON.stringify(newState));
+            setCubeState(newState);
+            setMoveHistory(prev => [...prev, move]);
+          } else {
+            console.error("Invalid state received from backend:", newState);
+            setErrorMessage("Invalid cube state received");
+          }
         }
       }, 350);
     } catch (error) {
@@ -458,7 +552,10 @@ const RubiksCube3D = () => {
       });
       
       if (response.data.cubeState) {
-        setCubeState(response.data.cubeState);
+        console.log("Reset cube state received:", JSON.stringify(response.data.cubeState));
+        // Create a deep copy of the state to prevent reference issues
+        const resetState = JSON.parse(JSON.stringify(response.data.cubeState));
+        setCubeState(resetState);
         setMoveHistory([]);
       }
     } catch (error) {
@@ -475,10 +572,38 @@ const RubiksCube3D = () => {
         </div>
       )}
       
-      <div 
-        ref={mountRef} 
-        className="relative mb-4 w-full h-[400px] border border-gray-200 rounded-lg shadow-lg"
-      />
+      <div className="relative w-full">
+        <div 
+          ref={mountRef} 
+          className="relative mb-4 w-full h-[400px] border border-gray-200 rounded-lg shadow-lg"
+        />
+        <div className="absolute top-2 right-2 flex space-x-2">
+          <button
+            onClick={() => {
+              if (cameraRef.current && controlsRef.current) {
+                cameraRef.current.position.set(4, 3, 5);
+                cameraRef.current.lookAt(0, 0, 0);
+                controlsRef.current.update();
+              }
+            }}
+            className="px-2 py-1 bg-gray-800 text-white rounded text-xs"
+          >
+            Reset View
+          </button>
+          <button
+            onClick={() => {
+              setDebugMode(!debugMode);
+              if (cubeState) {
+                // Recreate cubes with debug info
+                createCubes();
+              }
+            }}
+            className={`px-2 py-1 ${debugMode ? 'bg-green-600' : 'bg-gray-600'} text-white rounded text-xs`}
+          >
+            {debugMode ? 'Debug: ON' : 'Debug: OFF'}
+          </button>
+        </div>
+      </div>
       
       <div className="controls mt-4 w-full max-w-md">
         <div className="grid grid-cols-4 gap-2 mb-4">

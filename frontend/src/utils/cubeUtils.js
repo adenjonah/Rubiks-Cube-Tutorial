@@ -13,9 +13,27 @@ export const getFaceIndex = (x, y, z, face) => {
     case 'left': // x = -1
       return (1 - y) * 3 + (1 + z);
     case 'up': // y = 1
-      return (1 - z) * 3 + (1 + x);
+      // Up face is viewed from above, with front at the bottom
+      // So the indices should be:
+      // 0 1 2  (back row)
+      // 3 4 5  (middle row)
+      // 6 7 8  (front row - adjacent to front face)
+      // We're inverting the indices (180 degree rotation) so:
+      // 6 7 8 becomes 2 1 0
+      // 3 4 5 becomes 5 4 3
+      // 0 1 2 becomes 8 7 6
+      return 8 - ((1 - z) * 3 + (1 + x));
     case 'down': // y = -1
-      return (1 + z) * 3 + (1 + x);
+      // Down face is viewed from below, with front at the top
+      // So the indices should be:
+      // 0 1 2  (front row - adjacent to front face)
+      // 3 4 5  (middle row)
+      // 6 7 8  (back row)
+      // We're inverting the indices (180 degree rotation) so:
+      // 0 1 2 becomes 8 7 6
+      // 3 4 5 becomes 5 4 3
+      // 6 7 8 becomes 2 1 0
+      return 8 - ((1 + z) * 3 + (1 + x));
     case 'front': // z = 1
       return (1 - y) * 3 + (1 + x);
     case 'back': // z = -1
@@ -50,10 +68,11 @@ export const COLORS = {
   gray: 0x111111    // Hidden faces
 };
 
-// Face indices mapping
+// Face indices mapping - these MUST match backend ordering
+// Based on the backend's FACE_INDICES in models/cube.py
 export const FACE_INDICES = {
-  RIGHT: 0,  // Blue (X+)
-  LEFT: 1,   // Green (X-)
+  LEFT: 0,   // Green (X-)
+  RIGHT: 1,  // Blue (X+)
   UP: 2,     // White (Y+)
   DOWN: 3,   // Yellow (Y-)
   FRONT: 4,  // Red (Z+)
